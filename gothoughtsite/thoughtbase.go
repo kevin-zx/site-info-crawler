@@ -12,7 +12,7 @@ import (
 
 const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
 
-func goThoughtSite(siteUrlStr string, port int, limitCount int, timeOut time.Duration,
+func goThoughtSite(siteUrlStr string, port int, limitCount int, delay time.Duration,
 	handler func(html *colly.HTMLElement),
 	onErr func(response *colly.Response, e error),
 	parentInfo func(currentUrl string, parentUrl string, err error)) (err error) {
@@ -38,8 +38,8 @@ func goThoughtSite(siteUrlStr string, port int, limitCount int, timeOut time.Dur
 	c.Limit(&colly.LimitRule{
 		DomainGlob:  "*" + siteUrl.Host + "*",
 		Parallelism: 4,
-		RandomDelay: timeOut,
-		Delay:       timeOut,
+		RandomDelay: delay,
+		Delay:       delay,
 	})
 	c.SetRequestTimeout(20 * time.Second)
 	c.OnHTML("html", func(ele *colly.HTMLElement) {

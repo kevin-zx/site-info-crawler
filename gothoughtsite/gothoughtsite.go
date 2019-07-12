@@ -62,10 +62,10 @@ func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 	return
 }
 
-func RunWithParams(siteUrlRaw string, limitCount int, timeout time.Duration, port int) (linkMap map[string]*SiteLinkInfo, err error) {
+func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port int) (linkMap map[string]*SiteLinkInfo, err error) {
 	mu = sync.Mutex{}
 	linkMap = map[string]*SiteLinkInfo{siteUrlRaw: {}}
-	err = goThoughtSite(siteUrlRaw, port, limitCount, timeout, func(html *colly.HTMLElement) {
+	err = goThoughtSite(siteUrlRaw, port, limitCount, delay, func(html *colly.HTMLElement) {
 		wi, err := parseWebSeoElement(html.DOM)
 		if err != nil {
 			return
