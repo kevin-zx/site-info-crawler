@@ -12,7 +12,10 @@ import (
 
 const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
 
-func goThoughtSite(siteUrlStr string, port int, limitCount int, timeOut time.Duration, handler func(html *colly.HTMLElement), onErr func(response *colly.Response, e error), parentInfo func(currentUrl string, parentUrl string)) (err error) {
+func goThoughtSite(siteUrlStr string, port int, limitCount int, timeOut time.Duration,
+	handler func(html *colly.HTMLElement),
+	onErr func(response *colly.Response, e error),
+	parentInfo func(currentUrl string, parentUrl string, err error)) (err error) {
 	//userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
 
 	userAgent := "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
@@ -39,33 +42,36 @@ func goThoughtSite(siteUrlStr string, port int, limitCount int, timeOut time.Dur
 		Delay:       timeOut,
 	})
 	c.SetRequestTimeout(20 * time.Second)
-	c.OnHTML("html", func(e *colly.HTMLElement) {
+	c.OnHTML("html", func(ele *colly.HTMLElement) {
 
-		fmt.Println(e.Request.ID)
-		if e.Request.ID%50 == 0 {
-			fmt.Printf("爬取了 %d 个\n", e.Request.ID)
+		fmt.Println(ele.Request.ID)
+		if ele.Request.ID%50 == 0 {
+			fmt.Printf("爬取了 %d 个\n", ele.Request.ID)
 		}
 		if handler != nil {
-			handler(e)
+			handler(ele)
 		}
 
-		e.DOM.Find("a[href]").Each(func(i int, a *goquery.Selection) {
+		ele.DOM.Find("a[href]").Each(func(i int, a *goquery.Selection) {
 			href, ok := a.Attr("href")
 			if !ok {
 				return
 			}
 			link := clearUrl(href)
-			resultUrl := parseUrl(e.Request.URL, link)
+			resultUrl := parseUrl(ele.Request.URL, link)
 
 			//if resultUrl != "" && (strings.HasPrefix(resultUrl, "http:") || strings.HasPrefix(resultUrl, "https:")) && !strings.HasPrefix(link, "./") && !strings.HasPrefix(link, "/") && !strings.HasPrefix(link, "http") {
 			//	link = "/" + link
-			//	resultUrl = parseUrl(e.Request.URL, link)
+			//	resultUrl = parseUrl(ele.Request.URL, link)
 			//}
 			if resultUrl != "" {
-				erri := e.Request.Visit(resultUrl)
-				if erri == nil {
-					parentInfo(resultUrl, e.Request.URL.String())
-				}
+				erri := ele.Request.Visit(resultUrl)
+				parentInfo(resultUrl, ele.Request.URL.String(), erri)
+				//if erri == nil {
+				//
+				//}else{
+				//	fmt.Println(erri.Error())
+				//}
 			}
 		})
 	})

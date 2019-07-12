@@ -33,6 +33,7 @@ type SiteLinkInfo struct {
 	H1             string
 	IsCrawler      bool
 	InnerText      string
+	QuoteCount     int // 引用次数
 }
 
 var mu sync.Mutex
@@ -102,7 +103,6 @@ func RunWithParams(siteUrlRaw string, limitCount int, timeout time.Duration, por
 		mu.Unlock()
 	}, func(response *colly.Response, e error) {
 		mu.Lock()
-
 		currentUrl := response.Request.URL.String()
 		if _, ok := linkMap[currentUrl]; !ok {
 			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
@@ -116,11 +116,16 @@ func RunWithParams(siteUrlRaw string, limitCount int, timeout time.Duration, por
 		}
 
 		mu.Unlock()
-	}, func(currentUrl string, parentUrl string) {
+	}, func(currentUrl string, parentUrl string, err error) {
+		if err != nil && err.Error() == "URL already visited" {
+			linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
+			return
+		}
 		mu.Lock()
 		if _, ok := linkMap[currentUrl]; !ok {
 			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
 		}
+		linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
 		linkMap[currentUrl].ParentURL = parentUrl
 		mu.Unlock()
 	})
