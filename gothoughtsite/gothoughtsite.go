@@ -56,9 +56,9 @@ func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 	keywordsStr = strings.Replace(keywordsStr, "“", "", -1)
 	keywordsStr = strings.Replace(keywordsStr, "”", "", -1)
 	keywords = removeDuplicatesAndEmpty(strings.Split(keywordsStr, "|"))
-	if len(keywordsStr) > 0 && len(keywords) == 1 {
-		fmt.Println("Package sitetools.comm.site_base Class WebPageSeoInfo function SplitKeywordsStr2Arr 遇到疑似解析失败的关键词" + keywordsStr)
-	}
+	//if len(keywordsStr) > 0 && len(keywords) == 1 {
+	//	fmt.Println("Package sitetools.comm.site_base Class WebPageSeoInfo function SplitKeywordsStr2Arr 遇到疑似解析失败的关键词" + keywordsStr)
+	//}
 	return
 }
 

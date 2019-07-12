@@ -44,7 +44,7 @@ func goThoughtSite(siteUrlStr string, port int, limitCount int, delay time.Durat
 	c.SetRequestTimeout(20 * time.Second)
 	c.OnHTML("html", func(ele *colly.HTMLElement) {
 
-		fmt.Println(ele.Request.ID)
+		//fmt.Println(ele.Request.ID)
 		if ele.Request.ID%50 == 0 {
 			fmt.Printf("爬取了 %d 个\n", ele.Request.ID)
 		}
