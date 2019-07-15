@@ -117,10 +117,7 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 
 		mu.Unlock()
 	}, func(currentUrl string, parentUrl string, err error) {
-		if err != nil && err.Error() == "URL already visited" {
-			linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
-			return
-		}
+
 		mu.Lock()
 		if _, ok := linkMap[currentUrl]; !ok {
 			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
@@ -128,6 +125,10 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 		linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
 		linkMap[currentUrl].ParentURL = parentUrl
 		mu.Unlock()
+		if err != nil && err.Error() == "URL already visited" {
+			linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
+			return
+		}
 	})
 	for k, v := range linkMap {
 		// todo:会有absUrl为空的情况，暂时搞不懂为什么。先暴力修复

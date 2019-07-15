@@ -8,13 +8,18 @@ import (
 
 func TestRunWithParams(t *testing.T) {
 
-	gotLinkMap, err := RunWithParams("http://www.daqing886.com/", 100,
+	//gotLinkMap, err := RunWithParams("http://www.whbfyf.com/", 10000,
+	gotLinkMap, err := RunWithParams("http://www.yangze88.com/", 10000,
 		time.Second*1, 1)
 	if err != nil {
 		panic(err)
 	}
 
 	for _, l := range gotLinkMap {
-		fmt.Printf("%s , %d\n", l.AbsURL, l.QuoteCount)
+		title := ""
+		if l.WebPageSeoInfo != nil {
+			title = l.WebPageSeoInfo.Title
+		}
+		fmt.Printf("%s , %s , %d , %d\n", l.AbsURL, title, l.QuoteCount, len(l.InnerText))
 	}
 }
