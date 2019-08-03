@@ -63,6 +63,7 @@ func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 }
 
 func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port int) (linkMap map[string]*SiteLinkInfo, err error) {
+	// 这里的锁一定不能暴露到方法外部不然就线程不安全了
 	mu := sync.Mutex{}
 	linkMap = map[string]*SiteLinkInfo{siteUrlRaw: {}}
 	err = goThoughtSite(siteUrlRaw, port, limitCount, delay, func(html *colly.HTMLElement) {
