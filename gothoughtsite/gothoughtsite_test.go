@@ -9,7 +9,7 @@ import (
 func TestRunWithParams(t *testing.T) {
 
 	//gotLinkMap, err := RunWithParams("http://www.whbfyf.com/", 10000,
-	gotLinkMap, err := RunWithParams("http://www.yangze88.com/", 10000,
+	gotLinkMap, err := RunWithParams("http://www.sichuanks.cn/", 10000,
 		time.Second*1, 1)
 	if err != nil {
 		panic(err)

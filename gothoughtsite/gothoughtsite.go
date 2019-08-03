@@ -36,7 +36,7 @@ type SiteLinkInfo struct {
 	QuoteCount     int // 引用次数
 }
 
-var mu sync.Mutex
+//var mu sync.Mutex
 
 func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 	// 处理keywordStr 到arr
@@ -63,7 +63,7 @@ func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 }
 
 func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port int) (linkMap map[string]*SiteLinkInfo, err error) {
-	mu = sync.Mutex{}
+	mu := sync.Mutex{}
 	linkMap = map[string]*SiteLinkInfo{siteUrlRaw: {}}
 	err = goThoughtSite(siteUrlRaw, port, limitCount, delay, func(html *colly.HTMLElement) {
 		wi, err := parseWebSeoElement(html.DOM)
