@@ -56,13 +56,17 @@ func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 	keywordsStr = strings.Replace(keywordsStr, "“", "", -1)
 	keywordsStr = strings.Replace(keywordsStr, "”", "", -1)
 	keywords = removeDuplicatesAndEmpty(strings.Split(keywordsStr, "|"))
-	//if len(keywordsStr) > 0 && len(keywords) == 1 {
-	//	fmt.Println("Package sitetools.comm.site_base Class WebPageSeoInfo function SplitKeywordsStr2Arr 遇到疑似解析失败的关键词" + keywordsStr)
-	//}
 	return
 }
 
-func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port int) (linkMap map[string]*SiteLinkInfo, err error) {
+type DevicePort int
+
+const (
+	PortPC     DevicePort = 1
+	PortMobile DevicePort = 2
+)
+
+func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port DevicePort) (linkMap map[string]*SiteLinkInfo, err error) {
 	// 这里的锁一定不能暴露到方法外部不然就线程不安全了
 	mu := sync.Mutex{}
 	linkMap = map[string]*SiteLinkInfo{siteUrlRaw: {}}
@@ -188,7 +192,6 @@ func clear(s string) string {
 }
 
 func parseWebSeoElement(html *goquery.Selection) (*WebPageSeoInfo, error) {
-
 	title := html.Find("title").Text()
 	description, _ := html.Find("meta[name=description]").Attr("content")
 	keywords, _ := html.Find("meta[name=keywords]").Attr("content")
@@ -198,8 +201,8 @@ func parseWebSeoElement(html *goquery.Selection) (*WebPageSeoInfo, error) {
 
 func removeDuplicatesAndEmpty(a []string) (ret []string) {
 	var keywordCount = make(map[string]int)
-	a_len := len(a)
-	for i := 0; i < a_len; i++ {
+	aLen := len(a)
+	for i := 0; i < aLen; i++ {
 		duFlag := false
 		for _, re := range ret {
 			if len(a[i]) == 0 {
