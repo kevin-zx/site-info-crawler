@@ -1,4 +1,4 @@
-package gothoughtsite
+package sitethougher
 
 import (
 	"bytes"
@@ -9,6 +9,7 @@ import (
 	"golang.org/x/text/transform"
 	"io/ioutil"
 	"net/url"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -33,28 +34,25 @@ type SiteLinkInfo struct {
 	H1             string
 	IsCrawler      bool
 	InnerText      string
+	HrefTxt        string
 	QuoteCount     int // 引用次数
+	PageType       PageType
 }
 
-//var mu sync.Mutex
+type SiteInfo struct {
+	SiteLinks []*SiteLinkInfo
+	Suffix    string
+}
+
+var splitText = []string{",", "-", "，", "、", "_", " ", "\t", ";", "；", "\n", "“", "”", "\""}
 
 func (wpsi *WebPageSeoInfo) SpiltKeywordsStr2Arr() (keywords []string) {
 	// 处理keywordStr 到arr
 	keywordsStr := wpsi.Keywords
 	//替换统一的分隔符
-	keywordsStr = strings.Replace(keywordsStr, ",", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "-", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "，", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "、", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "_", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, " ", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "\t", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, ";", "|", -1)
-	keywordsStr = strings.Replace(keywordsStr, "；", "|", -1)
-
-	keywordsStr = strings.Replace(keywordsStr, "\n", "", -1)
-	keywordsStr = strings.Replace(keywordsStr, "“", "", -1)
-	keywordsStr = strings.Replace(keywordsStr, "”", "", -1)
+	for _, s := range splitText {
+		keywordsStr = strings.Replace(keywordsStr, s, "|", -1)
+	}
 	keywords = removeDuplicatesAndEmpty(strings.Split(keywordsStr, "|"))
 	return
 }
@@ -66,85 +64,81 @@ const (
 	PortMobile DevicePort = 2
 )
 
-func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port DevicePort) (linkMap map[string]*SiteLinkInfo, err error) {
+func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port DevicePort) (si *SiteInfo, err error) {
 	// 这里的锁一定不能暴露到方法外部不然就线程不安全了
 	mu := sync.Mutex{}
-	linkMap = map[string]*SiteLinkInfo{siteUrlRaw: {}}
+	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
 	err = goThoughtSite(siteUrlRaw, port, limitCount, delay, func(html *colly.HTMLElement) {
-		wi, err := parseWebSeoElement(html.DOM)
-		if err != nil {
-			return
-		}
-
 		currentUrl := html.Request.URL.String()
 
+		wi, err := parseWebSeoElement(html.DOM)
+		if err != nil {
+			//panic(err)
+			return
+		}
+		si := linkMap[currentUrl]
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
-		if _, ok := linkMap[currentUrl]; !ok {
-			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
-		}
-
-		linkMap[currentUrl].InnerText = html.DOM.Find("body").Text()
-		//fmt.Println(linkMap[currentUrl].InnerText)
-		TextLen := len(strings.Split(linkMap[currentUrl].InnerText, ""))
+		si.InnerText = html.DOM.Find("body").Text()
+		html.DOM.Find("script").Each(func(_ int, selection *goquery.Selection) {
+			si.InnerText = strings.Replace(si.InnerText, selection.Text(), "", -1)
+		})
+		TextLen := len(strings.Split(si.InnerText, ""))
 		if TextLen > 8000 {
 			TextLen = 8000
 		}
-
-		linkMap[currentUrl].InnerText = strings.Join(strings.Split(linkMap[currentUrl].InnerText, "")[0:TextLen], "")
-		//fmt.Println(linkMap[currentUrl].InnerText )
-		linkMap[currentUrl].IsCrawler = true
-		linkMap[currentUrl].H1 = clear(h1.Text())
-		linkMap[currentUrl].WebPageSeoInfo = wi
-		//charset,_ := html.DOM.Find("meta[http-equiv=Content-Type]").Attr("content")
-		//if strings.Contains(strings.ToLower(charset),"gb") {
-		//	convertGBKCharset(linkMap[currentUrl])
-		//}
-		linkMap[currentUrl].Depth = html.Request.Depth
+		si.InnerText = strings.Join(strings.Split(si.InnerText, "")[0:TextLen], "")
+		si.IsCrawler = true
+		si.H1 = clear(h1.Text())
+		si.WebPageSeoInfo = wi
+		si.Depth = html.Request.Depth
 		if html.Response.StatusCode != 200 {
 			fmt.Println(html.Response.StatusCode)
 		}
-		linkMap[currentUrl].StatusCode = html.Response.StatusCode
+		si.StatusCode = html.Response.StatusCode
 		mu.Unlock()
 	}, func(response *colly.Response, e error) {
 		mu.Lock()
 		currentUrl := response.Request.URL.String()
-		if _, ok := linkMap[currentUrl]; !ok {
-			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
-		}
-		existLink := linkMap[currentUrl]
-		fmt.Println(existLink.StatusCode)
 		if !linkMap[currentUrl].IsCrawler {
 			linkMap[currentUrl].IsCrawler = true
 			linkMap[currentUrl].Depth = response.Request.Depth
 			linkMap[currentUrl].StatusCode = response.StatusCode
 		}
-
 		mu.Unlock()
-	}, func(currentUrl string, parentUrl string, err error) {
+	}, func(currentUrl string, parentUrl string, hrefTxt string, err error) {
 		mu.Lock()
 		if _, ok := linkMap[currentUrl]; !ok {
-			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl}
+			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl, HrefTxt: clear(hrefTxt), ParentURL: parentUrl}
 		}
+
 		linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
-		linkMap[currentUrl].ParentURL = parentUrl
-		if err != nil && err.Error() == "URL already visited" {
-			linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
-		}
 		mu.Unlock()
 		return
 	})
-	mu.Lock()
+	si = &SiteInfo{SiteLinks: []*SiteLinkInfo{}, Suffix: ""}
+	var ts []string
 	for k, v := range linkMap {
-		// todo:会有absUrl为空的情况，暂时搞不懂为什么。先暴力修复
-		if v.AbsURL == "" {
-			linkMap[k].AbsURL = k
-		}
 		if !v.IsCrawler {
 			delete(linkMap, k)
+			continue
 		}
+		if v.ParentURL == "" {
+			v.PageType = PageTypeHome
+		}
+		if v.WebPageSeoInfo != nil && v.WebPageSeoInfo.Title != "" {
+			ts = append(ts, v.WebPageSeoInfo.Title)
+		}
+		si.SiteLinks = append(si.SiteLinks, v)
 	}
-	mu.Unlock()
+
+	// 这里降序排序
+	sort.Slice(si.SiteLinks, func(i, j int) bool {
+		return si.SiteLinks[i].QuoteCount > si.SiteLinks[j].QuoteCount
+	})
+	ps := GetPublicSuffix(ts)
+	si.Suffix = ps
+	setPageType(si)
 	return
 }
 
@@ -187,6 +181,11 @@ func clear(s string) string {
 	s = strings.TrimSpace(s)
 	s = strings.Trim(s, " ")
 	s = strings.Replace(s, "​", "", -1)
+	s = strings.Replace(s, " ", "", -1)
+	s = strings.Replace(s, " ", "", -1)
+	s = strings.Replace(s, "	", "", -1)
+	s = strings.Replace(s, "\r", "", -1)
+	s = strings.Replace(s, "\n", "", -1)
 	s = strings.Replace(s, "\n", "", -1)
 	return s
 }

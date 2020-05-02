@@ -1,4 +1,4 @@
-package gothoughtsite
+package sitethougher
 
 import (
 	"github.com/PuerkitoBio/goquery"
@@ -15,7 +15,7 @@ const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.P
 func goThoughtSite(siteUrlStr string, port DevicePort, limitCount int, delay time.Duration,
 	handler func(html *colly.HTMLElement),
 	onErr func(response *colly.Response, e error),
-	parentInfo func(currentUrl string, parentUrl string, err error)) (err error) {
+	parentInfo func(currentUrl string, parentUrl string, keyword string, err error)) (err error) {
 	//userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
 
 	userAgent := "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
@@ -58,11 +58,19 @@ func goThoughtSite(siteUrlStr string, port DevicePort, limitCount int, delay tim
 			if !ok {
 				return
 			}
+			if strings.Contains(href,"script") {
+				return
+			}
 			link := clearUrl(href)
+
 			resultUrl := parseUrl(ele.Request.URL, link)
+			hrefText := a.Text()
+			if hrefText == "" {
+				hrefText = a.AttrOr("alt","")
+			}
 			if resultUrl != "" {
 				err := ele.Request.Visit(resultUrl)
-				parentInfo(resultUrl, ele.Request.URL.String(), err)
+				parentInfo(resultUrl, ele.Request.URL.String(), hrefText, err)
 			}
 		})
 	})
