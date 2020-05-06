@@ -8,16 +8,30 @@ import (
 
 func TestRunWithParams(t *testing.T) {
 	//
-	////gotLinkMap, err := RunWithParams("http://www.whbfyf.com/", 10000,
-	gotLinkMap, err := RunWithParams("http://www.tpsyyq.com/", 30,
+	////si, err := RunWithParams("http://www.whbfyf.com/", 10000,
+	si, err := RunWithParams("http://www.zggsjx.com/", 3000,
 		time.Second*1, PortPC)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(gotLinkMap.Suffix)
-
+	fmt.Println(si.Suffix)
+	//result, err := json.Marshal(si)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//f, err := os.Create("../data/test/si.data")
+	//if err != nil {
+	//	panic(err)
+	//}
+	//defer f.Close()
+	//bufw := bufio.NewWriter(f)
+	//_, err = bufw.Write(result)
+	//if err != nil {
+	//	panic(err)
+	//}
+	//bufw.Flush()
 	//
-	for _, l := range gotLinkMap.SiteLinks {
+	for _, l := range si.SiteLinks {
 		title := ""
 		if l.WebPageSeoInfo != nil {
 			title = l.WebPageSeoInfo.Title

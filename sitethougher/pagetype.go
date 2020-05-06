@@ -23,10 +23,6 @@ const (
 )
 
 func setPageType(siteInfo *SiteInfo) {
-	//topPageCount := 40
-	//if len(siteInfo.SiteLinks) <= 40 {
-	//	topPageCount = len(siteInfo.SiteLinks)
-	//}
 	tpage := len(siteInfo.SiteLinks)
 	for i := 1; i < len(siteInfo.SiteLinks); i++ {
 		isTop := false
@@ -64,14 +60,25 @@ func judgePageType(info *SiteLinkInfo, suffix string, isTopPage bool) PageType {
 	}
 	titlePts := judeTitle(strings.ReplaceAll(t+info.H1+info.HrefTxt, suffix, ""))
 	if isTopPage {
-		return maxPts(urlPts, titlePts)
+		var allType []PageType
+		for _,pt:=range append(urlPts,titlePts...){
+			if pt == PageTypeBread {
+				if len(info.HrefTxt+strings.ReplaceAll(info.WebPageSeoInfo.Title,suffix,""))>28 {
+					continue
+				}
+
+			}
+			allType = append(allType, pt)
+		}
+		return maxPts(allType)
+
 	}
 	return PageTypeUnKnown
 }
 
-func maxPts(pts []PageType, pts2 []PageType) PageType {
+func maxPts(pts []PageType) PageType {
 	countM := map[PageType]int{}
-	for _, pt := range append(pts, pts2...) {
+	for _, pt := range append(pts) {
 		if _, ok := countM[pt]; ok {
 			countM[pt]++
 		} else {
@@ -81,7 +88,7 @@ func maxPts(pts []PageType, pts2 []PageType) PageType {
 	p := PageTypeUnKnown
 	m := 0
 	for pageType, c := range countM {
-		if c > m {
+		if c > m && pageType != PageTypeUnKnown {
 			p = pageType
 		}
 	}
@@ -110,9 +117,6 @@ func judeTitle(title string) []PageType {
 				break
 			}
 		}
-	}
-	if len(pts) == 0 {
-		pts = append(pts, PageTypeUnKnown)
 	}
 	return pts
 }
