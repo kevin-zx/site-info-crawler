@@ -79,7 +79,10 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 		si := linkMap[currentUrl]
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
-		si.InnerText = html.DOM.Find("body").Text()
+		if html.DOM.Find("body") != nil {
+			si.InnerText = html.DOM.Find("body").Text()
+		}
+
 		html.DOM.Find("script").Each(func(_ int, selection *goquery.Selection) {
 			si.InnerText = strings.Replace(si.InnerText, selection.Text(), "", -1)
 		})

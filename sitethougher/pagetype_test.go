@@ -113,12 +113,12 @@ func Test_judgePageType(t *testing.T) {
 	}
 
 	for _, link := range si.SiteLinks {
-		if "http://www.tpsyyq.com/l_yingyongfanwei.html" == link.AbsURL {
-			pageType := judgePageType(link, si.Suffix, true)
-			if pageType == PageTypeUnKnown {
-				t.Fatal("want " + PageTypeBread + "get pageType " + pageType)
-			}
-		}
+		//if "http://www.tpsyyq.com/l_yingyongfanwei.html" == link.AbsURL {
+		//	pageType := judgePageType(link, si.Suffix, true)
+		//	if pageType == PageTypeUnKnown {
+		//		t.Fatal("want " + PageTypeBread + "get pageType " + pageType)
+		//	}
+		//}
 		//if "http://www.tpsyyq.com/c_weixiufuwu/changjianwenti.html" == link.AbsURL {
 		//	pageType := judgePageType(link, si.Suffix, true)
 		//	want := PageTypeFAQ
@@ -126,7 +126,8 @@ func Test_judgePageType(t *testing.T) {
 		//		t.Fatal("want " + want + "get pageType " + pageType)
 		//	}
 		//}
-		fmt.Println(link.AbsURL, link.HrefTxt, link.QuoteCount, "---->", link.PageType)
+		//fmt.Println(link.AbsURL, link.HrefTxt, link.QuoteCount, "---->", link.PageType)
+		fmt.Println(link.AbsURL)
 	}
 
 }
