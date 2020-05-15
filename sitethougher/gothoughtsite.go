@@ -77,6 +77,7 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 			return
 		}
 		si := linkMap[currentUrl]
+		// todo: 了解这里的原因，然后更加精细的处理
 		if si == nil {
 			return
 		}
