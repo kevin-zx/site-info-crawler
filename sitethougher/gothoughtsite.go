@@ -77,6 +77,9 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 			return
 		}
 		si := linkMap[currentUrl]
+		if si == nil {
+			return
+		}
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
 		if html.DOM.Find("body") != nil {
