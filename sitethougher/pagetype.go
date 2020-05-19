@@ -20,6 +20,8 @@ const (
 	PageTypeKefu    PageType = "客服"
 	PageTypeUnKnown PageType = "未识别"
 	PageTypeSupport PageType = "技术支持"
+//
+//	market/store
 )
 
 func setPageType(siteInfo *SiteInfo) {
@@ -201,17 +203,14 @@ func breadUrlJudge(absURL string) bool {
 	}
 	return false
 }
-func isMatchFeature() {
 
-}
-
-func mean(nums []float64) float64 {
-	var t float64 = 0
-	for _, num := range nums {
-		t += num
-	}
-	return t / float64(len(nums))
-}
+//func mean(nums []float64) float64 {
+//	var t float64 = 0
+//	for _, num := range nums {
+//		t += num
+//	}
+//	return t / float64(len(nums))
+//}
 
 func strArrayIn(strArr []string, instr string) bool {
 	for _, s := range strArr {
