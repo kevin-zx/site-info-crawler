@@ -139,7 +139,7 @@ type URLFeature struct {
 }
 
 func GroupURLs(urls []string) URLGroup {
-	ufs := decomposeURLs(urls)
+	ufs := DecomposeURLs(urls)
 	ufs = URLFeatureSort(ufs)
 	u, err := url.Parse(urls[0])
 	if err != nil {
@@ -250,7 +250,7 @@ func compareStr(a, b string) int {
 	return 0
 }
 
-func decomposeURLs(urls []string) []URLFeature {
+func DecomposeURLs(urls []string) []URLFeature {
 	var ufs []URLFeature
 	for _, u := range urls {
 		uf, err := decomposeSingleURL(u, true)
