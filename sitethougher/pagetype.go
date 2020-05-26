@@ -20,6 +20,7 @@ const (
 	PageTypeKefu    PageType = "客服"
 	PageTypeUnKnown PageType = "未识别"
 	PageTypeSupport PageType = "技术支持"
+	PageTypeErr PageType = "错误页面"
 //
 //	market/store
 )
@@ -57,6 +58,9 @@ func judgeHome(absURL string) bool {
 func judgePageType(info *SiteLinkInfo, suffix string, isTopPage bool) PageType {
 	urlPts := judgeURL(info.AbsURL)
 	t := ""
+	if info.WebPageSeoInfo == nil {
+		return PageTypeErr
+	}
 	if info.WebPageSeoInfo != nil {
 		t = info.WebPageSeoInfo.Title
 	}
