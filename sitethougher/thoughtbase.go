@@ -10,16 +10,23 @@ import (
 	"time"
 )
 
+type GTSOption struct {
+	LimitCount   int
+	Delay        time.Duration
+	Port         DevicePort
+	//NeedDocument bool
+}
+
 const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
 
-func goThoughtSite(siteUrlStr string, port DevicePort, limitCount int, delay time.Duration,
+func goThoughtSite(siteUrlStr string,gtsOption *GTSOption,
 	handler func(html *colly.HTMLElement),
 	onErr func(response *colly.Response, e error),
 	parentInfo func(currentUrl string, parentUrl string, keyword string, err error)) (err error) {
 	//userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
 
 	userAgent := "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
-	if port == PortMobile {
+	if gtsOption.Port == PortMobile {
 		userAgent = "Mozilla/5.0 (Linux;u;Android 4.2.2;zh-cn;) AppleWebKit/534.46 (KHTML,like Gecko) Version/5.1 Mobile Safari/10600.6.3 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
 	}
 	siteUrl, err := url.Parse(siteUrlStr)
@@ -38,8 +45,8 @@ func goThoughtSite(siteUrlStr string, port DevicePort, limitCount int, delay tim
 	err = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*" + siteUrl.Host + "*",
 		Parallelism: 4,
-		RandomDelay: delay,
-		Delay:       delay,
+		RandomDelay: gtsOption.Delay,
+		Delay:       gtsOption.Delay,
 	})
 	if err != nil {
 		return err
@@ -75,7 +82,7 @@ func goThoughtSite(siteUrlStr string, port DevicePort, limitCount int, delay tim
 		})
 	})
 	c.OnRequest(func(request *colly.Request) {
-		if request.ID > uint32(limitCount) {
+		if request.ID > uint32(gtsOption.LimitCount) {
 			request.Abort()
 		}
 	})

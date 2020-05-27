@@ -37,6 +37,7 @@ type SiteLinkInfo struct {
 	HrefTxt        string
 	QuoteCount     int // 引用次数
 	PageType       PageType
+	HtmlDocument   *goquery.Selection
 }
 
 type SiteInfo struct {
@@ -64,22 +65,61 @@ const (
 	PortMobile DevicePort = 2
 )
 
-func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port DevicePort) (si *SiteInfo, err error) {
+type Option struct {
+	LimitCount   int
+	Delay        time.Duration
+	Port         DevicePort
+	NeedDocument bool
+}
+
+func (o *Option) SetNullToDefault() {
+	if o.Port <= 0 {
+		o.Port = DefaultOption.Port
+	}
+	if o.LimitCount <= 0 {
+		o.LimitCount = DefaultOption.LimitCount
+	}
+	if o.Delay <= 0 {
+		o.Delay = DefaultOption.Delay
+	}
+}
+
+var DefaultOption = &Option{
+	LimitCount:   500,
+	Delay:        2 * time.Second,
+	Port:         PortPC,
+	NeedDocument: false,
+}
+
+func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 	// 这里的锁一定不能暴露到方法外部不然就线程不安全了
+	if opt != nil {
+		opt.SetNullToDefault()
+	}
+	if opt == nil {
+		opt = DefaultOption
+	}
+
 	mu := sync.Mutex{}
+	gtsO := &GTSOption{
+		LimitCount: opt.LimitCount,
+		Delay:      opt.Delay,
+		Port:       opt.Port,
+	}
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
-	err = goThoughtSite(siteUrlRaw, port, limitCount, delay, func(html *colly.HTMLElement) {
+	err = goThoughtSite(siteUrlRaw, gtsO, func(html *colly.HTMLElement) {
 		currentUrl := html.Request.URL.String()
 
 		wi, err := parseWebSeoElement(html.DOM)
 		if err != nil {
-			//panic(err)
 			return
 		}
 		si := linkMap[currentUrl]
-		// todo: 了解这里的原因，然后更加精细的处理
 		if si == nil {
 			return
+		}
+		if opt.NeedDocument {
+			si.HtmlDocument = html.DOM
 		}
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
@@ -99,6 +139,7 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 		si.H1 = clear(h1.Text())
 		si.WebPageSeoInfo = wi
 		si.Depth = html.Request.Depth
+
 		if html.Response.StatusCode != 200 {
 			fmt.Println(html.Response.StatusCode)
 		}
@@ -147,6 +188,16 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 	si.Suffix = ps
 	setPageType(si)
 	return
+}
+
+func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port DevicePort) (si *SiteInfo, err error) {
+	opt := &Option{
+		LimitCount:   limitCount,
+		Delay:        delay,
+		Port:         port,
+		NeedDocument: false,
+	}
+	return RunWithOptions(siteUrlRaw,opt)
 }
 
 func convertGBKCharset(sli *SiteLinkInfo) {
