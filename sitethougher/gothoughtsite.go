@@ -148,13 +148,14 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 	}, func(response *colly.Response, e error) {
 		mu.Lock()
 		currentUrl := response.Request.URL.String()
+
 		if !linkMap[currentUrl].IsCrawler {
 			linkMap[currentUrl].IsCrawler = true
 			linkMap[currentUrl].Depth = response.Request.Depth
 			linkMap[currentUrl].StatusCode = response.StatusCode
 		}
 		mu.Unlock()
-	}, func(currentUrl string, parentUrl string, hrefTxt string, err error) {
+	}, func(currentUrl string, parentUrl string, hrefTxt string) {
 		mu.Lock()
 		if _, ok := linkMap[currentUrl]; !ok {
 			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl, HrefTxt: clear(hrefTxt), ParentURL: parentUrl}

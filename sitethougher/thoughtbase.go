@@ -11,18 +11,18 @@ import (
 )
 
 type GTSOption struct {
-	LimitCount   int
-	Delay        time.Duration
-	Port         DevicePort
+	LimitCount int
+	Delay      time.Duration
+	Port       DevicePort
 	//NeedDocument bool
 }
 
 const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
 
-func goThoughtSite(siteUrlStr string,gtsOption *GTSOption,
+func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	handler func(html *colly.HTMLElement),
 	onErr func(response *colly.Response, e error),
-	parentInfo func(currentUrl string, parentUrl string, keyword string, err error)) (err error) {
+	parentInfo func(currentUrl string, parentUrl string, keyword string)) (err error) {
 	//userAgent := "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/69.0.3497.100 Safari/537.36"
 
 	userAgent := "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
@@ -65,7 +65,7 @@ func goThoughtSite(siteUrlStr string,gtsOption *GTSOption,
 			if !ok {
 				return
 			}
-			if strings.Contains(href,"script") {
+			if strings.Contains(href, "script") {
 				return
 			}
 			link := clearUrl(href)
@@ -73,11 +73,11 @@ func goThoughtSite(siteUrlStr string,gtsOption *GTSOption,
 			resultUrl := parseUrl(ele.Request.URL, link)
 			hrefText := a.Text()
 			if hrefText == "" {
-				hrefText = a.AttrOr("alt","")
+				hrefText = a.AttrOr("alt", "")
 			}
 			if resultUrl != "" {
-				err := ele.Request.Visit(resultUrl)
-				parentInfo(resultUrl, ele.Request.URL.String(), hrefText, err)
+				parentInfo(resultUrl, ele.Request.URL.String(), hrefText)
+				_ = ele.Request.Visit(resultUrl)
 			}
 		})
 	})
