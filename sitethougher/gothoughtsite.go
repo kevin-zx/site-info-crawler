@@ -149,10 +149,13 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		mu.Lock()
 		currentUrl := response.Request.URL.String()
 
-		if !linkMap[currentUrl].IsCrawler {
+		if _, ok := linkMap[currentUrl]; ok && !linkMap[currentUrl].IsCrawler {
 			linkMap[currentUrl].IsCrawler = true
 			linkMap[currentUrl].Depth = response.Request.Depth
 			linkMap[currentUrl].StatusCode = response.StatusCode
+		}else{
+			// todo: 这里逻辑需要验证
+			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl, IsCrawler: true, Depth: response.Request.Depth, StatusCode: response.StatusCode,}
 		}
 		mu.Unlock()
 	}, func(currentUrl string, parentUrl string, hrefTxt string) {
@@ -198,7 +201,7 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 		Port:         port,
 		NeedDocument: false,
 	}
-	return RunWithOptions(siteUrlRaw,opt)
+	return RunWithOptions(siteUrlRaw, opt)
 }
 
 func convertGBKCharset(sli *SiteLinkInfo) {
