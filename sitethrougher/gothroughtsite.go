@@ -37,7 +37,7 @@ type SiteLinkInfo struct {
 	HrefTxt        string
 	QuoteCount     int // 引用次数
 	PageType       PageType
-	Html           string
+	Html           []byte
 }
 
 type SiteInfo struct {
@@ -119,7 +119,8 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			return
 		}
 		if opt.NeedDocument {
-			si.Html, _ = goquery.OuterHtml(html.DOM)
+			ht, _ := goquery.OuterHtml(html.DOM)
+			si.Html = []byte(ht)
 		}
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
