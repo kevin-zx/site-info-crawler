@@ -42,12 +42,6 @@ func RunSiteWithCache(siteURL string, cachePath string, expireHour int, option *
 	fileName := encodeFileName(pu.Host, option.LimitCount, int(option.Port), option.NeedDocument, time.Now().Unix())
 	cacheFileName := cachePath + "/" + fileName
 
-	f, err := os.Create(cacheFileName)
-	if err != nil {
-		return
-	}
-
-	defer f.Close()
 	si, err = sitethrougher.RunWithOptions(siteURL, option)
 	if err != nil {
 		return nil, err
@@ -57,6 +51,11 @@ func RunSiteWithCache(siteURL string, cachePath string, expireHour int, option *
 	if err != nil {
 		return nil, err
 	}
+	f, err := os.Create(cacheFileName)
+	if err != nil {
+		return
+	}
+	defer f.Close()
 	bufW := bufio.NewWriter(f)
 	_, err = bufW.Write(data)
 	bufW.Flush()
