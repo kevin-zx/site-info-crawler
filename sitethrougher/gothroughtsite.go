@@ -37,7 +37,7 @@ type SiteLinkInfo struct {
 	HrefTxt        string
 	QuoteCount     int // 引用次数
 	PageType       PageType
-	HtmlDocument   *goquery.Selection
+	Html           string
 }
 
 type SiteInfo struct {
@@ -119,7 +119,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			return
 		}
 		if opt.NeedDocument {
-			si.HtmlDocument = html.DOM
+			si.Html, _ = goquery.OuterHtml(html.DOM)
 		}
 		h1 := html.DOM.Find("h1")
 		mu.Lock()
@@ -153,9 +153,9 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			linkMap[currentUrl].IsCrawler = true
 			linkMap[currentUrl].Depth = response.Request.Depth
 			linkMap[currentUrl].StatusCode = response.StatusCode
-		}else{
+		} else {
 			// todo: 这里逻辑需要验证
-			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl, IsCrawler: true, Depth: response.Request.Depth, StatusCode: response.StatusCode,}
+			linkMap[currentUrl] = &SiteLinkInfo{AbsURL: currentUrl, IsCrawler: true, Depth: response.Request.Depth, StatusCode: response.StatusCode}
 		}
 		mu.Unlock()
 	}, func(currentUrl string, parentUrl string, hrefTxt string) {
