@@ -1,4 +1,4 @@
-package sitethougher
+package sitethrougher
 
 import "testing"
 
