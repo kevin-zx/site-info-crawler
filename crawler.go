@@ -86,10 +86,10 @@ func decodeFileName(name string) (domain string, limitCount int, port int, needD
 	parts := strings.Split(strings.ReplaceAll(name, ".json", ""), "_")
 	if len(parts) == 5 {
 		domain = parts[0]
-		limitCount, _ := strconv.Atoi(parts[1])
-		port, _ := strconv.Atoi(parts[2])
+		limitCount, _ = strconv.Atoi(parts[1])
+		port, _ = strconv.Atoi(parts[2])
 		needDocument = parts[3] == "true"
-		timeStamp, _ := strconv.ParseInt(parts[4], 10, 64)
+		timeStamp, _ = strconv.ParseInt(parts[4], 10, 64)
 		if limitCount == 0 || port == 0 || timeStamp == 0 {
 			err = fmt.Errorf("this file name is't cache file")
 			return
