@@ -25,6 +25,11 @@ type WebPageSeoInfo struct {
 	Url         url.URL
 }
 
+type External struct {
+	HrefText string
+	Link     string
+}
+
 type SiteLinkInfo struct {
 	AbsURL         string
 	StatusCode     int
@@ -37,6 +42,7 @@ type SiteLinkInfo struct {
 	HrefTxt        string
 	QuoteCount     int // 引用次数
 	PageType       PageType
+	Externals      []*External
 	Html           []byte
 }
 
@@ -140,7 +146,33 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		si.H1 = clear(h1.Text())
 		si.WebPageSeoInfo = wi
 		si.Depth = html.Request.Depth
-
+		html.DOM.Find("a[href]").Each(func(i int, a *goquery.Selection) {
+			href, ok := a.Attr("href")
+			if !ok {
+				return
+			}
+			if strings.Contains(href, "script") {
+				return
+			}
+			link := clearUrl(href)
+			resultUrl := parseUrl(html.Request.URL, link)
+			hrefText := a.Text()
+			if hrefText == "" {
+				hrefText = a.AttrOr("alt", "")
+			}
+			if resultUrl != "" {
+				if hrefText == "" {
+					img := a.Find("img")
+					if img.Size() >= 1 {
+						hrefText = "img"
+					}
+				}
+				si.Externals = append(si.Externals, &External{
+					HrefText: hrefText,
+					Link:     resultUrl,
+				})
+			}
+		})
 		if html.Response.StatusCode != 200 {
 			fmt.Println(html.Response.StatusCode)
 		}
@@ -166,6 +198,12 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		}
 
 		linkMap[currentUrl].QuoteCount = linkMap[currentUrl].QuoteCount + 1
+		//if _, ok := linkMap[parentUrl]; parentUrl != "" && ok {
+		//	linkMap[parentUrl].Externals = append(linkMap[parentUrl].Externals, &External{
+		//		HrefText: hrefTxt,
+		//		Link:     currentUrl,
+		//	})
+		//}
 		mu.Unlock()
 		return
 	})

@@ -75,7 +75,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 			if hrefText == "" {
 				hrefText = a.AttrOr("alt", "")
 			}
-			if resultUrl != "" {
+			if resultUrl != "" && strings.HasPrefix(resultUrl,"http") {
 				parentInfo(resultUrl, ele.Request.URL.String(), hrefText)
 				_ = ele.Request.Visit(resultUrl)
 			}
