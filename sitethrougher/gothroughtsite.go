@@ -30,25 +30,69 @@ type External struct {
 	Link     string
 }
 
+type HrefText struct {
+	Count        int
+	FromLinkUrls []string
+}
+
 type SiteLinkInfo struct {
-	AbsURL         string
-	StatusCode     int
-	ParentURL      string
-	Depth          int
-	WebPageSeoInfo *WebPageSeoInfo
-	H1             string
-	IsCrawler      bool
-	InnerText      string
-	HrefTxt        string
-	QuoteCount     int // 引用次数
-	PageType       PageType
-	Externals      []*External
-	Html           []byte
+	AbsURL          string
+	StatusCode      int
+	ParentURL       string
+	Depth           int
+	WebPageSeoInfo  *WebPageSeoInfo
+	H1              string
+	IsCrawler       bool
+	InnerText       string
+	HrefTxt         string
+	DetailHrefTexts map[string]*HrefText
+	QuoteCount      int // 引用次数
+	PageType        PageType
+	Externals       []*External
+	Html            []byte
 }
 
 type SiteInfo struct {
 	SiteLinks []*SiteLinkInfo
 	Suffix    string
+}
+
+func FillSiteLinksDetailHrefText(s *SiteInfo) {
+	// pick five links to check whether it owns DetailHrefText
+	count := 5
+	for _, link := range s.SiteLinks {
+		if len(link.DetailHrefTexts) > 0 {
+			return
+		}
+		count--
+		if count == 0 {
+			break
+		}
+	}
+
+	ls := map[string]*SiteLinkInfo{}
+	for _, link := range s.SiteLinks {
+		ls[link.AbsURL] = link
+	}
+	for _, link := range s.SiteLinks {
+		for _, external := range link.Externals {
+			if l, ok := ls[external.Link]; ok {
+				if ht, ok := l.DetailHrefTexts[external.HrefText]; ok {
+					ht.FromLinkUrls = append(ht.FromLinkUrls, link.AbsURL)
+					ht.Count++
+				} else {
+					if l.DetailHrefTexts == nil {
+						l.DetailHrefTexts= make(map[string]*HrefText)
+					}
+					l.DetailHrefTexts[external.HrefText] = &HrefText{
+						Count:        1,
+						FromLinkUrls: []string{link.AbsURL},
+					}
+				}
+
+			}
+		}
+	}
 }
 
 var splitText = []string{",", "-", "，", "、", "_", " ", "\t", ";", "；", "\n", "“", "”", "\""}
