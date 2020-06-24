@@ -165,6 +165,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			return
 		}
 		mu.Lock()
+		defer mu.Unlock()
 		si := linkMap[currentUrl]
 		if si == nil {
 			return
@@ -221,7 +222,6 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			fmt.Println(html.Response.StatusCode)
 		}
 		si.StatusCode = html.Response.StatusCode
-		mu.Unlock()
 	}, func(response *colly.Response, e error) {
 		mu.Lock()
 		currentUrl := response.Request.URL.String()
