@@ -164,6 +164,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		if err != nil {
 			return
 		}
+		mu.Lock()
 		si := linkMap[currentUrl]
 		if si == nil {
 			return
@@ -173,7 +174,6 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			si.Html = []byte(ht)
 		}
 		h1 := html.DOM.Find("h1")
-		mu.Lock()
 		if html.DOM.Find("body") != nil {
 			si.InnerText = html.DOM.Find("body").Text()
 		}
