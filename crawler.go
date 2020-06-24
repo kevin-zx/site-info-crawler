@@ -36,7 +36,10 @@ func RunSiteWithCache(siteURL string, cachePath string, expireHour int, option *
 		si, err = decodeJsonFileToSiteInfo(cacheFile, cachePath)
 		if err == nil {
 			return
+		}else{
+			_ = os.Remove(cacheFile)
 		}
+
 	}
 
 	fileName := encodeFileName(pu.Host, option.LimitCount, int(option.Port), option.NeedDocument, time.Now().Unix())
