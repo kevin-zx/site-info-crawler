@@ -14,6 +14,7 @@ type GTSOption struct {
 	LimitCount int
 	Delay      time.Duration
 	Port       DevicePort
+	TimeOut    time.Duration
 	//NeedDocument bool
 }
 
@@ -40,7 +41,9 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 		colly.UserAgent(userAgent),
 		colly.Async(true),
 		colly.MaxDepth(1000),
+
 	)
+
 	c.DetectCharset = true
 	err = c.Limit(&colly.LimitRule{
 		DomainGlob:  "*" + siteUrl.Host + "*",
@@ -51,7 +54,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	if err != nil {
 		return err
 	}
-	c.SetRequestTimeout(20 * time.Second)
+	c.SetRequestTimeout(gtsOption.TimeOut)
 	c.OnHTML("html", func(ele *colly.HTMLElement) {
 		if ele.Request.ID%50 == 0 {
 			log.Printf("爬取了 %d 个\n", ele.Request.ID)
@@ -75,7 +78,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 			if hrefText == "" {
 				hrefText = a.AttrOr("alt", "")
 			}
-			if resultUrl != "" && strings.HasPrefix(resultUrl,"http") {
+			if resultUrl != "" && strings.HasPrefix(resultUrl, "http") {
 				parentInfo(resultUrl, ele.Request.URL.String(), hrefText)
 				_ = ele.Request.Visit(resultUrl)
 			}

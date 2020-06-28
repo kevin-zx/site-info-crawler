@@ -82,7 +82,7 @@ func FillSiteLinksDetailHrefText(s *SiteInfo) {
 					ht.Count++
 				} else {
 					if l.DetailHrefTexts == nil {
-						l.DetailHrefTexts= make(map[string]*HrefText)
+						l.DetailHrefTexts = make(map[string]*HrefText)
 					}
 					l.DetailHrefTexts[external.HrefText] = &HrefText{
 						Count:        1,
@@ -120,6 +120,7 @@ type Option struct {
 	Delay        time.Duration
 	Port         DevicePort
 	NeedDocument bool
+	TimeOut      time.Duration
 }
 
 func (o *Option) SetNullToDefault() {
@@ -132,6 +133,9 @@ func (o *Option) SetNullToDefault() {
 	if o.Delay <= 0 {
 		o.Delay = DefaultOption.Delay
 	}
+	if o.TimeOut <= 0 {
+		o.TimeOut = DefaultOption.TimeOut
+	}
 }
 
 var DefaultOption = &Option{
@@ -139,6 +143,7 @@ var DefaultOption = &Option{
 	Delay:        2 * time.Second,
 	Port:         PortPC,
 	NeedDocument: false,
+	TimeOut:      20 * time.Second,
 }
 
 func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
@@ -155,6 +160,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		LimitCount: opt.LimitCount,
 		Delay:      opt.Delay,
 		Port:       opt.Port,
+		TimeOut: opt.TimeOut,
 	}
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
 	err = goThoughtSite(siteUrlRaw, gtsO, func(html *colly.HTMLElement) {
