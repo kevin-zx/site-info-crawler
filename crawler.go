@@ -36,7 +36,7 @@ func RunSiteWithCache(siteURL string, cachePath string, expireHour int, option *
 		si, err = decodeJsonFileToSiteInfo(cacheFile, cachePath)
 		if err == nil {
 			return
-		}else{
+		} else {
 			_ = os.Remove(cacheFile)
 		}
 

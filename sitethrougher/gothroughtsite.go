@@ -185,12 +185,16 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 			si.InnerText = html.DOM.Find("body").Text()
 		}
 
-		html.DOM.Find("script").Each(func(_ int, selection *goquery.Selection) {
-			si.InnerText = strings.Replace(si.InnerText, selection.Text(), "", -1)
+		html.DOM.Find("body script").Each(func(_ int, selection *goquery.Selection) {
+			si.InnerText = strings.ReplaceAll(si.InnerText, strings.TrimSpace(selection.Text()), "")
 		})
+		html.DOM.Find("body style").Each(func(_ int, selection *goquery.Selection) {
+			si.InnerText = strings.ReplaceAll(si.InnerText, strings.TrimSpace(selection.Text()), "")
+		})
+		si.InnerText = strings.TrimSpace(si.InnerText)
 		TextLen := len(strings.Split(si.InnerText, ""))
-		if TextLen > 8000 {
-			TextLen = 8000
+		if TextLen > 80000 {
+			TextLen = 80000
 		}
 		si.InnerText = strings.Join(strings.Split(si.InnerText, "")[0:TextLen], "")
 		si.IsCrawler = true
