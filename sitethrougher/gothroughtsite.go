@@ -160,7 +160,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		LimitCount: opt.LimitCount,
 		Delay:      opt.Delay,
 		Port:       opt.Port,
-		TimeOut: opt.TimeOut,
+		TimeOut:    opt.TimeOut,
 	}
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
 	err = goThoughtSite(siteUrlRaw, gtsO, func(html *colly.HTMLElement) {
@@ -219,7 +219,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 				if hrefText == "" {
 					img := a.Find("img")
 					if img.Size() >= 1 {
-						hrefText = "img"
+						hrefText = "___img___"
 					}
 				}
 				si.Externals = append(si.Externals, &External{
