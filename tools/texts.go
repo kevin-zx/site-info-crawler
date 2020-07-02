@@ -10,10 +10,10 @@ import (
 )
 
 type SamePart struct {
-	text string
-	rate float64
+	Text string
+	Rate float64
 }
-// a same text detector to discriminate same text in different page
+// a same Text detector to discriminate same Text in different page
 func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 	all := len(info.SiteLinks)
 	if all <= 3 {
@@ -74,15 +74,15 @@ func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 			}
 		}
 		sp := &SamePart{
-			text: part,
-			rate: float64(c) / float64(len(allTxt)),
+			Text: part,
+			Rate: float64(c) / float64(len(allTxt)),
 		}
-		if sp.rate > 0.3 {
+		if sp.Rate > 0.3 {
 			sps = append(sps, sp)
 		}
 	}
 	sort.Slice(sps, func(i, j int) bool {
-		return len(sps[i].text) > len(sps[j].text)
+		return len(sps[i].Text) > len(sps[j].Text)
 	})
 	return sps
 }

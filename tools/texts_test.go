@@ -17,6 +17,6 @@ func TestDiscriminateSiteTextSamePart(t *testing.T) {
 
 	sps := DiscriminateSiteTextSamePart(si)
 	for _, sp := range sps {
-		fmt.Println(len(sp.text), sp.rate)
+		fmt.Println(len(sp.Text), sp.Rate)
 	}
 }
