@@ -20,9 +20,9 @@ const (
 	PageTypeKefu    PageType = "客服"
 	PageTypeUnKnown PageType = "未识别"
 	PageTypeSupport PageType = "技术支持"
-	PageTypeErr PageType = "错误页面"
-//
-//	market/store
+	PageTypeErr     PageType = "错误页面"
+	//
+	//	market/store
 )
 
 func setPageType(siteInfo *SiteInfo) {
@@ -67,9 +67,9 @@ func judgePageType(info *SiteLinkInfo, suffix string, isTopPage bool) PageType {
 	titlePts := judeTitle(strings.ReplaceAll(t+info.H1+info.HrefTxt, suffix, ""))
 	if isTopPage {
 		var allType []PageType
-		for _,pt:=range append(urlPts,titlePts...){
+		for _, pt := range append(urlPts, titlePts...) {
 			if pt == PageTypeBread {
-				if len(info.HrefTxt+strings.ReplaceAll(info.WebPageSeoInfo.Title,suffix,""))>28 {
+				if len(info.HrefTxt+strings.ReplaceAll(info.WebPageSeoInfo.Title, suffix, "")) > 28 {
 					continue
 				}
 

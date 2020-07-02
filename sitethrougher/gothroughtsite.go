@@ -74,6 +74,7 @@ func FillSiteLinksDetailHrefText(s *SiteInfo) {
 	for _, link := range s.SiteLinks {
 		ls[link.AbsURL] = link
 	}
+
 	for _, link := range s.SiteLinks {
 		for _, external := range link.Externals {
 			if l, ok := ls[external.Link]; ok {
@@ -93,6 +94,19 @@ func FillSiteLinksDetailHrefText(s *SiteInfo) {
 			}
 		}
 	}
+
+	for _, link := range s.SiteLinks {
+		c := 0
+		for k, href := range link.DetailHrefTexts {
+			if k != "" {
+				if href.Count > c {
+					c = href.Count
+					link.HrefTxt = k
+				}
+			}
+		}
+	}
+
 }
 
 var splitText = []string{",", "-", "，", "、", "_", " ", "\t", ";", "；", "\n", "“", "”", "\""}
