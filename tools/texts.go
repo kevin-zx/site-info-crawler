@@ -1,12 +1,10 @@
 package tools
 
 import (
-	"fmt"
 	"github.com/kevin-zx/site-info-crawler/sitethrougher"
 	"math/rand"
 	"sort"
 	"strings"
-	"time"
 )
 
 type SamePart struct {
@@ -31,8 +29,8 @@ func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 	}
 	c := 0
 	var innerSamePartStrings []string
-	allSpend := int64(0)
-	maxc := all/5
+	//allSpend := int64(0)
+	maxc := all/10
 	if maxc < 5 {
 		maxc = 5
 	}
@@ -44,10 +42,10 @@ func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 			c--
 			continue
 		}
-		timeS := time.Now().UnixNano()/10000000
+		//timeS := time.Now().UnixNano()/10000000
 		cps := findSamePartFromTwoString(allTxt[first], allTxt[second])
-		allSpend+=time.Now().UnixNano()/10000000 - timeS
-		fmt.Println(c,allSpend)
+		//allSpend+=time.Now().UnixNano()/10000000 - timeS
+		//fmt.Println(c,allSpend)
 		for _, cp := range cps {
 			same := false
 			for _, part := range innerSamePartStrings {
