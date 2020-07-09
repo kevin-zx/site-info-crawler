@@ -11,10 +11,11 @@ import (
 )
 
 type GTSOption struct {
-	LimitCount int
-	Delay      time.Duration
-	Port       DevicePort
-	TimeOut    time.Duration
+	LimitCount    int
+	Delay         time.Duration
+	Port          DevicePort
+	TimeOut       time.Duration
+	AllowedDomain string
 	//NeedDocument bool
 }
 
@@ -34,14 +35,16 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	if err != nil {
 		return err
 	}
+	if gtsOption.AllowedDomain == "" {
+		gtsOption.AllowedDomain = siteUrl.Host
+	}
 
 	c := colly.NewCollector(
-		colly.AllowedDomains(siteUrl.Host),
+		colly.AllowedDomains(gtsOption.AllowedDomain),
 		colly.DisallowedURLFilters(regexp.MustCompile(fileRegString)),
 		colly.UserAgent(userAgent),
 		colly.Async(true),
 		colly.MaxDepth(1000),
-
 	)
 
 	c.DetectCharset = true

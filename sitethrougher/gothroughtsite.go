@@ -130,11 +130,12 @@ const (
 )
 
 type Option struct {
-	LimitCount   int
-	Delay        time.Duration
-	Port         DevicePort
-	NeedDocument bool
-	TimeOut      time.Duration
+	LimitCount    int
+	Delay         time.Duration
+	Port          DevicePort
+	NeedDocument  bool
+	TimeOut       time.Duration
+	AllowedDomain string
 }
 
 func (o *Option) SetNullToDefault() {
@@ -171,10 +172,11 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 
 	mu := sync.Mutex{}
 	gtsO := &GTSOption{
-		LimitCount: opt.LimitCount,
-		Delay:      opt.Delay,
-		Port:       opt.Port,
-		TimeOut:    opt.TimeOut,
+		LimitCount:    opt.LimitCount,
+		Delay:         opt.Delay,
+		Port:          opt.Port,
+		TimeOut:       opt.TimeOut,
+		AllowedDomain: opt.AllowedDomain,
 	}
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
 	err = goThoughtSite(siteUrlRaw, gtsO, func(html *colly.HTMLElement) {
@@ -312,33 +314,33 @@ func RunWithParams(siteUrlRaw string, limitCount int, delay time.Duration, port 
 }
 
 func convertGBKCharset(sli *SiteLinkInfo) {
-	h1B, err := gbkToUtf8([]byte(sli.H1))
+	h1B, err := gbk2UTF8([]byte(sli.H1))
 	if err == nil {
 		sli.H1 = string(h1B)
 	}
-	innerTextByte, err := gbkToUtf8([]byte(sli.InnerText))
+	innerTextByte, err := gbk2UTF8([]byte(sli.InnerText))
 	if err == nil {
 		fmt.Println(sli.InnerText)
 		sli.InnerText = string(innerTextByte)
 		fmt.Println(sli.InnerText)
 	}
-	descByte, err := gbkToUtf8([]byte(sli.WebPageSeoInfo.Description))
+	descByte, err := gbk2UTF8([]byte(sli.WebPageSeoInfo.Description))
 	if err == nil {
 		sli.WebPageSeoInfo.Description = string(descByte)
 	}
-	keywordsByte, err := gbkToUtf8([]byte(sli.WebPageSeoInfo.Keywords))
+	keywordsByte, err := gbk2UTF8([]byte(sli.WebPageSeoInfo.Keywords))
 	if err == nil {
 		sli.WebPageSeoInfo.Keywords = string(keywordsByte)
 	}
 
-	TitleByte, err := gbkToUtf8([]byte(sli.WebPageSeoInfo.Title))
+	TitleByte, err := gbk2UTF8([]byte(sli.WebPageSeoInfo.Title))
 	if err == nil {
 		sli.WebPageSeoInfo.Title = string(TitleByte)
 	}
 
 }
 
-func gbkToUtf8(s []byte) ([]byte, error) {
+func gbk2UTF8(s []byte) ([]byte, error) {
 	reader := transform.NewReader(bytes.NewReader(s), simplifiedchinese.GB18030.NewDecoder())
 	d, e := ioutil.ReadAll(reader)
 	if e != nil {
