@@ -40,7 +40,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	}
 
 	c := colly.NewCollector(
-		colly.AllowedDomains(gtsOption.AllowedDomain),
+		colly.AllowedDomains(gtsOption.AllowedDomain,siteUrl.Host),
 		colly.DisallowedURLFilters(regexp.MustCompile(fileRegString)),
 		colly.UserAgent(userAgent),
 		colly.Async(true),
@@ -49,7 +49,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 
 	c.DetectCharset = true
 	err = c.Limit(&colly.LimitRule{
-		DomainGlob:  "*" + gtsOption.AllowedDomain + "*",
+		DomainGlob:  "*" + siteUrl.Host + "*",
 		Parallelism: 4,
 		RandomDelay: gtsOption.Delay,
 		Delay:       gtsOption.Delay,

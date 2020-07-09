@@ -8,7 +8,9 @@ import (
 )
 
 func ExampleRunSiteWithCache() {
-	si, err := RunSiteWithCache("http://www.jianshu.com", os.TempDir(), 24*1, sitethrougher.DefaultOption)
+	opt :=sitethrougher.DefaultOption
+	opt.AllowedDomain = "cs.zbj.com"
+	si, err := RunSiteWithCache("http://suzhou.cs.zbj.com", os.TempDir(), 24*1, sitethrougher.DefaultOption)
 	if err != nil {
 		panic(err)
 	}
