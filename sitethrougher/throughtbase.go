@@ -49,7 +49,7 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 
 	c.DetectCharset = true
 	err = c.Limit(&colly.LimitRule{
-		DomainGlob:  "*" + siteUrl.Host + "*",
+		DomainGlob:  "*" + gtsOption.AllowedDomain + "*",
 		Parallelism: 4,
 		RandomDelay: gtsOption.Delay,
 		Delay:       gtsOption.Delay,
