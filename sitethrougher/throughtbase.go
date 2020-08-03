@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -20,6 +21,8 @@ type GTSOption struct {
 }
 
 const fileRegString = ".+?(\\.jpg|\\.png|\\.gif|\\.GIF|\\.PNG|\\.JPG|\\.pdf|\\.PDF|\\.doc|\\.DOC|\\.csv|\\.CSV|\\.xls|\\.XLS|\\.xlsx|\\.XLSX|\\.mp40|\\.lfu|\\.DNG|\\.ZIP|\\.zip)(\\W+?\\w|$)"
+
+var tmpLock = new(sync.Mutex)
 
 func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	handler func(html *colly.HTMLElement),
@@ -40,12 +43,13 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	}
 
 	c := colly.NewCollector(
-		colly.AllowedDomains(gtsOption.AllowedDomain,siteUrl.Host),
+		colly.AllowedDomains(gtsOption.AllowedDomain, siteUrl.Host),
 		colly.DisallowedURLFilters(regexp.MustCompile(fileRegString)),
 		colly.UserAgent(userAgent),
 		colly.Async(true),
 		colly.MaxDepth(1000),
 	)
+	requestMap := make(map[string]int)
 
 	c.DetectCharset = true
 	err = c.Limit(&colly.LimitRule{
@@ -66,14 +70,15 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 			handler(ele)
 		}
 
-		ele.DOM.Find("a[href]").Each(func(i int, a *goquery.Selection) {
+		ele.DOM.Find("a[href]").EachWithBreak(func(i int, a *goquery.Selection) bool {
 			href, ok := a.Attr("href")
 			if !ok {
-				return
+				return true
 			}
 			if strings.Contains(href, "script") {
-				return
+				return true
 			}
+
 			link := clearUrl(href)
 
 			resultUrl := parseUrl(ele.Request.URL, link)
@@ -82,17 +87,40 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 				hrefText = a.AttrOr("alt", "")
 			}
 			if resultUrl != "" && strings.HasPrefix(resultUrl, "http") {
-				parentInfo(resultUrl, ele.Request.URL.String(), hrefText)
-				_ = ele.Request.Visit(resultUrl)
+
+				//_ = ele.Request.Visit(resultUrl)
+				flag := true
+				if len(c.DisallowedURLFilters) > 0 {
+					if isMatchingFilter(c.DisallowedURLFilters, []byte(resultUrl)) {
+						flag = false
+					}
+				}
+				if len(c.URLFilters) > 0 {
+					if !isMatchingFilter(c.URLFilters, []byte(resultUrl)) {
+						flag = false
+					}
+				}
+				if myFilter(resultUrl, siteUrl.Host) {
+					flag = false
+				}
+				if flag {
+					parentInfo(resultUrl, ele.Request.URL.String(), hrefText)
+					_ = ele.Request.Visit(resultUrl)
+				}
 			}
+			return true
 		})
 	})
+
 	c.OnRequest(func(request *colly.Request) {
-		if request.ID > uint32(gtsOption.LimitCount) {
+		tmpLock.Lock()
+		defer tmpLock.Unlock()
+		if len(requestMap) > gtsOption.LimitCount {
 			request.Abort()
-		}else{
-			//fmt.Println(request.URL.String())
 		}
+
+		requestMap[request.URL.String()] = 0
+
 	})
 	c.OnResponse(func(response *colly.Response) {
 		//fmt.Println("-------",response.Request.URL.String())
@@ -101,7 +129,9 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 		}
 
 	})
-	c.OnError(onErr)
+	c.OnError(func(response *colly.Response, err error) {
+		onErr(response, err)
+	})
 	err = c.Visit(siteUrl.String())
 	c.Wait()
 	return err
@@ -137,4 +167,26 @@ func handlerDoubleSlant(webUrl string) string {
 		webUrl = strings.Replace(webUrl, "//", "/", -1)
 	}
 	return webUrl
+}
+func isMatchingFilter(fs []*regexp.Regexp, d []byte) bool {
+	for _, r := range fs {
+		if r.Match(d) {
+			return true
+		}
+	}
+	return false
+}
+
+var notAllowedFeatures = []string{"#"}
+
+func myFilter(url string, host string) bool {
+	if !strings.Contains(url, host) {
+		return true
+	}
+	for _, feature := range notAllowedFeatures {
+		if strings.Contains(url, feature) {
+			return true
+		}
+	}
+	return false
 }

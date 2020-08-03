@@ -52,8 +52,9 @@ type SiteLinkInfo struct {
 }
 
 type SiteInfo struct {
-	SiteLinks []*SiteLinkInfo
-	Suffix    string
+	SiteLinks   []*SiteLinkInfo
+	Suffix      string
+	AnchorCount int
 }
 
 func FillSiteLinksDetailHrefText(s *SiteInfo) {
@@ -177,6 +178,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		TimeOut:       opt.TimeOut,
 		AllowedDomain: opt.AllowedDomain,
 	}
+
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
 	err = goThoughtSite(siteUrlRaw, gtsO, func(html *colly.HTMLElement) {
 		currentUrl := html.Request.URL.String()
@@ -276,10 +278,13 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		mu.Unlock()
 		return
 	})
-	si = &SiteInfo{SiteLinks: []*SiteLinkInfo{}, Suffix: ""}
+	si = &SiteInfo{SiteLinks: []*SiteLinkInfo{}, Suffix: "", AnchorCount: 0}
 	var ts []string
 	for k, v := range linkMap {
 		if !v.IsCrawler {
+			if strings.Contains(k, "#") {
+				si.AnchorCount++
+			}
 			delete(linkMap, k)
 			continue
 		}
