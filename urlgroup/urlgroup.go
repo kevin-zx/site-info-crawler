@@ -1,7 +1,6 @@
 package urlgroup
 
 import (
-	"fmt"
 	"net/url"
 	"sort"
 	"strings"
@@ -34,7 +33,7 @@ func (ug *URLGroup) Insert(feature *URLFeature) {
 		ug.Insert(feature)
 		return
 	}
-	fmt.Println(strings.Join(ug.URLFeature.PathFeature, "/"), len(ug.NextURLGroups))
+	//fmt.Println(strings.Join(ug.URLFeature.PathFeature, "/"), len(ug.NextURLGroups))
 	ng := newGroupByFeature(*feature, ug.Deep)
 	ug.NextURLGroups = append(ug.NextURLGroups, &ng)
 	return

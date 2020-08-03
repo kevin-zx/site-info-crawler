@@ -2,7 +2,6 @@ package sitethrougher
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/PuerkitoBio/goquery"
 	"github.com/gocolly/colly"
 	"golang.org/x/text/encoding/simplifiedchinese"
@@ -244,9 +243,9 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 				})
 			}
 		})
-		if html.Response.StatusCode != 200 {
-			fmt.Println(html.Response.StatusCode)
-		}
+		//if html.Response.StatusCode != 200 {
+		//	fmt.Println(html.Response.StatusCode)
+		//}
 		si.StatusCode = html.Response.StatusCode
 	}, func(response *colly.Response, e error) {
 		mu.Lock()
@@ -320,9 +319,7 @@ func convertGBKCharset(sli *SiteLinkInfo) {
 	}
 	innerTextByte, err := gbk2UTF8([]byte(sli.InnerText))
 	if err == nil {
-		fmt.Println(sli.InnerText)
 		sli.InnerText = string(innerTextByte)
-		fmt.Println(sli.InnerText)
 	}
 	descByte, err := gbk2UTF8([]byte(sli.WebPageSeoInfo.Description))
 	if err == nil {

@@ -90,9 +90,12 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	c.OnRequest(func(request *colly.Request) {
 		if request.ID > uint32(gtsOption.LimitCount) {
 			request.Abort()
+		}else{
+			//fmt.Println(request.URL.String())
 		}
 	})
 	c.OnResponse(func(response *colly.Response) {
+		//fmt.Println("-------",response.Request.URL.String())
 		if !strings.Contains(strings.ToLower(response.Headers.Get("Content-Type")), "html") {
 			response.Headers.Set("Content-Type", "text/html;")
 		}

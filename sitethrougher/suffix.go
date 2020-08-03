@@ -1,6 +1,8 @@
 package sitethrougher
 
-import "strings"
+import (
+	"strings"
+)
 
 func GetPublicSuffix(ts []string) string {
 	suffixMap := make(map[string]int)
@@ -8,6 +10,12 @@ func GetPublicSuffix(ts []string) string {
 		for _, s := range ts {
 			if len(t) > 0 && len(s) > 0 {
 				suffix := getSuffix(s, t)
+				if suffix == "" {
+					break
+				}
+				//if suffix=="" {
+				//	fmt.Println(t)
+				//}
 				if _, ok := suffixMap[suffix]; !ok {
 					suffixMap[suffix] = 1
 				} else {
