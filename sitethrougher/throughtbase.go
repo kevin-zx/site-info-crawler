@@ -17,6 +17,7 @@ type GTSOption struct {
 	Port          DevicePort
 	TimeOut       time.Duration
 	AllowedDomain string
+	UserAgent     string
 	//NeedDocument bool
 }
 
@@ -33,6 +34,9 @@ func goThoughtSite(siteUrlStr string, gtsOption *GTSOption,
 	userAgent := "Mozilla/5.0 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
 	if gtsOption.Port == PortMobile {
 		userAgent = "Mozilla/5.0 (Linux;u;Android 4.2.2;zh-cn;) AppleWebKit/534.46 (KHTML,like Gecko) Version/5.1 Mobile Safari/10600.6.3 (compatible; Baiduspider/2.0; +http://www.baidu.com/search/spider.html)"
+	}
+	if gtsOption.UserAgent != "" {
+		userAgent = gtsOption.UserAgent
 	}
 	siteUrl, err := url.Parse(siteUrlStr)
 	if err != nil {

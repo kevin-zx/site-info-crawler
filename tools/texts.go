@@ -11,6 +11,7 @@ type SamePart struct {
 	Text string
 	Rate float64
 }
+
 // a same Text detector to discriminate same Text in different page
 func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 	all := len(info.SiteLinks)
@@ -30,7 +31,7 @@ func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 	c := 0
 	var innerSamePartStrings []string
 	//allSpend := int64(0)
-	maxc := all/10
+	maxc := all / 10
 	if maxc < 5 {
 		maxc = 5
 	}
@@ -86,6 +87,7 @@ func DiscriminateSiteTextSamePart(info *sitethrougher.SiteInfo) []*SamePart {
 }
 
 const sameMinLen = 100
+
 // This function can find the same part between two strings.
 // warning: this function is low efficient, don't drink it too much
 func findSamePartFromTwoString(first string, second string) []string {

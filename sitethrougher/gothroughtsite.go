@@ -136,6 +136,7 @@ type Option struct {
 	NeedDocument  bool
 	TimeOut       time.Duration
 	AllowedDomain string
+	UserAgent     string
 }
 
 func (o *Option) SetNullToDefault() {
@@ -177,6 +178,7 @@ func RunWithOptions(siteUrlRaw string, opt *Option) (si *SiteInfo, err error) {
 		Port:          opt.Port,
 		TimeOut:       opt.TimeOut,
 		AllowedDomain: opt.AllowedDomain,
+		UserAgent:     opt.UserAgent,
 	}
 
 	linkMap := map[string]*SiteLinkInfo{siteUrlRaw: {AbsURL: siteUrlRaw}}
